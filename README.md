@@ -1,3 +1,27 @@
+---
+license: apache-2.0
+library_name: rynnvla
+pipeline_tag: robotics
+language:
+  - en
+tags:
+  - vision-language-action
+  - vla
+  - latent-action
+  - latent-action-model
+  - robot-manipulation
+  - flow-matching
+  - mixture-of-transformers
+  - embodied-ai
+  - pytorch
+  - deepspeed
+# base_model is omitted on purpose: the hub warns about and drops an id that does not resolve to a
+# live repo, and the RynnBrain-2B/4B backbones are not published yet (see the TODO(hf) note at the
+# bottom of this file). This distribution also ships no weights, so nothing here is a fine-tune of
+# anything. Uncomment once the backbone lands.
+# base_model: Alibaba-DAMO-Academy/RynnBrain-2B
+---
+
 # RynnVLA-Latent
 
 **Latent Action Pretraining for Robotic Manipulation Foundation Models**
