@@ -1,0 +1,32 @@
+[
+  {
+    "scene_id": "SampleToy/ep0/head",
+    "file": "scenes/SampleToy__ep0__head.safetensors",
+    "num_frames": 12,
+    "num_flows": 11,
+    "height": 56,
+    "width": 56,
+    "bucket": "square",
+    "depth_stride": 1
+  },
+  {
+    "scene_id": "SampleToy/ep1/head",
+    "file": "scenes/SampleToy__ep1__head.safetensors",
+    "num_frames": 12,
+    "num_flows": 11,
+    "height": 56,
+    "width": 56,
+    "bucket": "square",
+    "depth_stride": 1
+  },
+  {
+    "scene_id": "SampleToy/ep2/head",
+    "file": "scenes/SampleToy__ep2__head.safetensors",
+    "num_frames": 12,
+    "num_flows": 11,
+    "height": 56,
+    "width": 56,
+    "bucket": "square",
+    "depth_stride": 1
+  }
+]

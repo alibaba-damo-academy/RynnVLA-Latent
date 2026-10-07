@@ -1,0 +1,59 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rynnvla-latent"
+version = "0.1.0"
+description = "RynnVLA-Latent: latent-action pretraining and vision-language-action fine-tuning, with the RynnLAM latent-action model"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+license-files = ["LICENSE", "NOTICE"]
+dependencies = [
+  "torch>=2.7.0a0,<2.11",
+  "torchvision>=0.22.0a0,<0.26",
+  "transformers==5.2.0",
+  "accelerate==1.11.0",
+  "deepspeed==0.18.2",
+  "numpy>=1.26,<3",
+  "scipy>=1.11",
+  "Pillow>=10",
+  "av>=13,<18",
+  "h5py>=3.11,<4",
+  "pyarrow>=15",
+  "packaging>=21",
+  "einops>=0.8",
+  "safetensors>=0.4",
+  "tqdm>=4.66",
+  "PyYAML>=6",
+  "opencv-python-headless>=4.8",
+]
+
+[project.optional-dependencies]
+preprocess = ["zarr>=2.16", "numcodecs>=0.12,<0.16"]
+# zarr>=3 only where it is installable: zarr 3.x requires Python >=3.11, and this package
+# supports 3.10. The EgoVerse Zarr-v3 reader needs it, so on 3.10 that path is unavailable and
+# its tests skip (importorskip minversion='3.0') rather than silently passing. The runtime
+# reader accepts a v2 store under [preprocess] on any supported Python.
+test = ["pytest>=8", "zarr>=3; python_version >= '3.11'"]
+
+[tool.setuptools]
+include-package-data = false
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["rynnvla*", "rynnlam*"]
+exclude = ["scripts*"]
+
+[tool.setuptools.package-data]
+rynnvla = ["configs/*.json"]
+rynnlam = ["configs/*.yaml"]
+
+[tool.pytest.ini_options]
+# tests/ has no __init__.py, so pytest puts it on sys.path itself -- which is what lets
+# test_robotwin_stage2.py import make_model from test_stage2_transfer.py.
+testpaths = ["tests"]
+# The suite is CPU-only by construction: the model fixtures are tiny synthetic configs, and the
+# two tests that need real data or a GPU skip themselves when it is absent rather than failing.
+addopts = "-ra --strict-markers"

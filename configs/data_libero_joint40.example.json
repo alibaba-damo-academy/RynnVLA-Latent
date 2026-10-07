@@ -1,0 +1,6 @@
+[
+  {"data_type": "LiberoPlusDataset", "data_path": "data/libero/libero_spatial_no_noops_lerobot_v21"},
+  {"data_type": "LiberoPlusDataset", "data_path": "data/libero/libero_object_no_noops_lerobot_v21"},
+  {"data_type": "LiberoPlusDataset", "data_path": "data/libero/libero_goal_no_noops_lerobot_v21"},
+  {"data_type": "LiberoPlusDataset", "data_path": "data/libero/libero_10_no_noops_lerobot_v21"}
+]

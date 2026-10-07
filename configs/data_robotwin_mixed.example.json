@@ -1,0 +1,12 @@
+[
+  {
+    "data_type": "RoboTwinDataset",
+    "data_path": "data/robotwin/robotwin_raw_hdf5",
+    "index_cache": "data/robotwin/robotwin_index.json",
+    "variants": [
+      "aloha-agilex_clean_50",
+      "aloha-agilex_randomized_500"
+    ],
+    "action_space": "ee"
+  }
+]

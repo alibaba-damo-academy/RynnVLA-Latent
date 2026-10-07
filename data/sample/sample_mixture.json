@@ -1,0 +1,12 @@
+[
+  {
+    "data_type": "LatentPretrainDataset",
+    "data_path": "data/sample/build/index_c6.npz",
+    "latent_stats_path": "data/sample/build/latent_stats.json",
+    "latent_chunk": 6,
+    "latent_step_seconds": 0.25,
+    "dataset_weights": {
+      "SampleToy": 1.0
+    }
+  }
+]

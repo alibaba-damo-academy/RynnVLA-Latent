@@ -1,0 +1,110 @@
+# Complete environment for RynnVLA-Latent: RynnLAM training, latent-action labeling and
+# latent-index building, Stage-1 latent-action VLA pretraining, Stage-2 robot-action
+# post-training, checkpoint export, offline prediction, and the bundled test suite.
+#
+# pyproject.toml stays the single source of truth for version ranges. This file adds only the
+# things pip cannot resolve on its own: a CUDA build of PyTorch, and flash-attn.
+#
+# Reference combination, verified end to end on linux-x86_64, NVIDIA H20 (sm90), CUDA 12.6
+# toolkit / driver 580.105.08 -- both training entrypoints, every CLI entrypoint, and
+# `pytest tests` (392 passed, 13 skipped, 44 subtests -- all skips documented):
+#   python 3.10, torch 2.7.1+cu126, transformers 5.2.0, deepspeed 0.18.2, accelerate 1.11.0,
+#   numpy 2.2.6, opencv-python-headless 5.0.0, flash-attn 2.8.3.post1
+#
+# Install:
+#   conda create -y -n rynnvla python=3.10 && conda activate rynnvla
+#   pip install -r requirements.txt
+#
+# Run it from the repository root: the `-e .` line below resolves against this directory.
+
+# --- 1. PyTorch, CUDA build -------------------------------------------------
+# Pinned to the CUDA 12.6 wheels on purpose. A bare `pip install torch` can resolve to a
+# CPU-only or differently-versioned build, and the flash-attn wheel in section 3 is
+# ABI-locked to this exact python/torch/CUDA/cxx11abi combination. On a different CUDA,
+# change both the index URL and the `+cuXXX` local versions together, then pick the
+# matching flash-attn asset (link in section 3).
+--extra-index-url https://download.pytorch.org/whl/cu126
+torch==2.7.1+cu126
+torchvision==0.22.1+cu126
+
+# --- 2. This repository, with every optional extra --------------------------
+# Brings in transformers==5.2.0, deepspeed==0.18.2, accelerate==1.11.0 and the rest of the
+# pinned ranges from pyproject.toml, plus:
+#   preprocess -> zarr, numcodecs       (corpus preprocessing / latent store)
+#   test       -> pytest                (the suite under tests/)
+# `test` is installed by default because tests/ ships in the sdist (MANIFEST.in grafts it) and
+# is the fastest way to confirm an install actually works: `pytest tests` runs fully offline on
+# CPU in under a minute. Drop it to `,.[preprocess]` if you want a runtime-only install.
+# Nothing here reaches a network service at runtime: checkpoints, corpora and tokenizer
+# assets are all read from local paths.
+-e .[preprocess,test]
+
+# --- 3. flash-attn ----------------------------------------------------------
+# A hard runtime requirement for training, deliberately NOT listed in pyproject
+# dependencies: PyPI ships only an sdist, and building it from source needs nvcc and roughly
+# an hour. rynnvla/utils/context_parallel.py imports flash_attn at module load and
+# rynnvla/training/data_collator.py imports that module, so no rynnvla training run can even
+# start without it. Installing from a prebuilt wheel needs no build step at all.
+#
+# The URL below is for python 3.10 + torch 2.7 + cu12 + cxx11abi TRUE. For any other
+# combination, pick the matching asset from:
+#   https://github.com/Dao-AILab/flash-attention/releases/tag/v2.8.3.post1
+#
+# This is a 244 MB download from GitHub's release-asset CDN, which is separate from
+# github.com itself and is sometimes blocked or throttled on corporate/cluster networks. The
+# symptom is `ERROR: Wheel 'flash-attn' located at ... is invalid` with a `0 bytes` download
+# line above it -- a truncated fetch, not a bad URL. If you hit it, download the asset once
+# through whatever channel works and install from the local file instead:
+#   pip install /path/to/flash_attn-2.8.3.post1+cu12torch2.7cxx11abiTRUE-cp310-cp310-linux_x86_64.whl
+# `pip install --timeout 300 --retries 10 -r requirements.txt` also helps on a slow link.
+# A partial download is worth checking for: the wheel is ~244 MB and its compiled extension
+# flash_attn_2_cuda*.so is ~1.0 GB once installed, so `python -c "import flash_attn_2_cuda"`
+# is the real test that the fetch was complete, not `import flash_attn`.
+https://github.com/Dao-AILab/flash-attention/releases/download/v2.8.3.post1/flash_attn-2.8.3.post1%2Bcu12torch2.7cxx11abiTRUE-cp310-cp310-linux_x86_64.whl
+
+# --- 4. Video decoding backend: "torchcodec" is optional and NOT installed ---
+# rynnvla/datasets/vla_datasets/utils.py exposes decode_video_frames(backend=...) with TWO
+# backends: "pyav" (PyAV, a hard dependency above) and "torchcodec" (an LRU-cached decoder,
+# faster for random frame access). torchcodec is NOT installed by this file and NOT declared
+# in pyproject.toml, so `import torchcodec` fails on a default install.
+#
+# decode_video_frames therefore defaults to backend="pyav", and every shipped dataset passes a
+# backend explicitly anyway: VLABenchDataset defaults to video_backend="pyav", RoboTwin reads
+# HDF5, LIBERO+ uses torchvision.io, and Stage-1 latent pretraining decodes per-frame with PyAV
+# directly. Nothing in this repository reaches the torchcodec path unless you ask for it.
+#
+# If you do want it, install torchcodec yourself and pass backend="torchcodec" (or
+# video_backend="torchcodec" to VLABenchDataset). It is ABI-paired with torch, so it must be
+# the release whose compatibility table lists torch 2.7 -- do not guess the version, and do
+# not add it to this file: a wrong pin here breaks the whole install rather than one code path.
+
+# --- 5. Closed-loop simulation is a SEPARATE environment --------------------
+# Nothing above installs a simulator, on purpose. The benchmark side (VLABench / RoboTwin /
+# LIBERO) is upstream code with pins that cannot coexist with this environment:
+#   * VLABench's validated sim stack is python 3.10 + numpy==1.25.0 + mujoco==3.2.2 +
+#     dm_control==1.0.22 + PyOpenGL==3.1.10 + gym==0.26.2 + open3d==0.18.0, while
+#     rynnvla requires numpy>=1.26,<3. numpy 1.25.0 has no cp312 wheels and rynnvla does not
+#     run on 1.25, so there is no single site-packages that satisfies both.
+#   * LIBERO additionally needs robosuite plus its own task assets, which are not on PyPI.
+# The two sides talk over a loopback socket (scripts/vlabench_policy_server.py), which is
+# exactly why they can live in different interpreters. Install the benchmark's own
+# requirements into a second env and point the eval driver at both interpreters.
+# Cross-env note that bites: pickled numpy arrays carry their module path, so a numpy-2.x
+# policy server must return plain lists to a numpy-1.25 simulator -- the server already does.
+
+# --- Not installable from pip, needed only for specific workflows -----------
+# LIBERO + its simulator assets : rynnvla.api.eval_libero (closed-loop benchmark)
+# VLABench / RoboTwin checkouts : the benchmark side of scripts/vlabench_policy_server.py and
+#                                 scripts/robotwin_policy.py. Set VLABENCH_HARNESS_SCRIPTS to
+#                                 a directory containing policy_client.py to also run the
+#                                 byte-level interop test in tests/.
+# LARYBench checkout            : scripts/evaluate_rynnlam.py regress
+# RynnBrain-2B/4B weights       : the VLA backbone for real Stage-1 / Stage-2 training
+# DA3-Large encoder weights     : TRAINING RynnLAM. rynnlam/configs/*.yaml expect
+#                                 checkpoints/DA3-LARGE-1.1/model.safetensors -- a DA3-Large
+#                                 build with QK-norm on every block (407 tensors; loaded
+#                                 strict=True). A QK-norm-disabled DA3 release is missing 65
+#                                 q_norm/k_norm tensors and the load fails.
+# RynnLAM motion checkpoint     : scripts/evaluate_rynnlam.py (extract / regress)
+# See the "Installation" and "Third-party dependencies and attribution" sections of
+# README.md, plus NOTICE, for what is and is not redistributed here.

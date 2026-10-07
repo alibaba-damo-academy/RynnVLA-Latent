@@ -1,0 +1,14 @@
+[
+  {
+    "data_type": "LatentPretrainDataset",
+    "data_path": "data/pretrain-latent/vla_train_index_c6.npz",
+    "latent_stats_path": "data/pretrain-latent/latent_stats.json",
+    "latent_chunk": 6,
+    "latent_step_seconds": 0.25,
+    "dataset_weights": {
+      "dataset_a": 0.6,
+      "dataset_b": 0.3,
+      "dataset_c": 0.1
+    }
+  }
+]

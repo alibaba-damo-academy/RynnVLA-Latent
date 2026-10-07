@@ -1,0 +1,18 @@
+[
+  {
+    "data_type": "LatentPretrainDataset",
+    "data_path": "data/pretrain-latent-rynnvla-base/indexes/libero_plus_index_c6.npz",
+    "latent_stats_path": "data/pretrain-latent/latent_stats.json",
+    "latent_chunk": 6,
+    "latent_step_seconds": 0.25,
+    "weight": 1.0
+  },
+  {
+    "data_type": "LatentPretrainDataset",
+    "data_path": "data/pretrain-latent-rynnvla-base/indexes/Droid_index_c6.npz",
+    "latent_stats_path": "data/pretrain-latent/latent_stats.json",
+    "latent_chunk": 6,
+    "latent_step_seconds": 0.25,
+    "weight": 1.0
+  }
+]

@@ -1,0 +1,75 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Packaging / build
+build/
+dist/
+*.egg-info/
+.eggs/
+wheels/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Training / experiment artifacts
+output/
+outputs/
+runs/
+checkpoints/
+*.ckpt
+*.pt
+*.pth
+*.safetensors
+
+# Job / launcher logs. These are the stdout of cluster submissions: they name mount points,
+# queue and node topology, and the absolute paths of every corpus the run touched. Nothing in
+# here belongs in a public repository. `*.log` covers every launcher's naming scheme.
+logs/
+*_logs/
+*.log
+
+# Data / latent artifacts — never commit corpora or labels. Everything under data/ is
+# downloaded or generated on the user's machine, with two exceptions:
+#   data/sample/      3 synthetic Stage-1 episodes (latent npz + videos + index + stats)
+#   data/sample_lam/  3 synthetic RynnLAM scenes (preprocessed safetensors + manifest)
+# Both use repo-root-relative paths, so a fresh clone can run `bash scripts/smoke.sh` with no
+# download and no credentials. data/smoke_tiny_model/ is NOT committed: it is materialized at
+# runtime by scripts/make_smoke_tiny_model.py, which copies upstream tokenizer assets.
+data/*
+!data/sample/
+!data/sample_lam/
+*.npz
+*.npy
+*.h5
+*.zarr/
+latent_stats.json
+# Re-include the committed samples against the broad patterns above (and against `build/` in
+# the packaging section). A directory has to be un-ignored before git looks inside it.
+!data/sample/build/
+!data/sample/**/*.npz
+!data/sample/**/latent_stats.json
+!data/sample_lam/**/*.safetensors
+# The sample corpora ship as mp4; `*.log` above must not swallow anything they need.
+!data/sample/**/*.mp4
+
+# Local overrides and credentials — keep out of version control.
+# `config.json` is ignored everywhere except inside a package `configs/` directory, where the
+# shipped recipes live. Order matters: git applies the last matching rule, so the unconditional
+# ignores come after the negation or `configs/*.local.json` would be committed.
+config.json
+!**/configs/*.json
+*.local.json
+.env
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.swp

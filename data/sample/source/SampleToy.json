@@ -1,0 +1,53 @@
+[
+  {
+    "dataset": "SampleToy",
+    "episode_id": "ep0",
+    "caption": [
+      {
+        "start_time": 0.0,
+        "description": "synthetic smoke sample episode 0"
+      }
+    ],
+    "views": {
+      "head": {
+        "video_path": "data/sample/videos/SampleToy_ep0_head.mp4",
+        "has_flow": false,
+        "has_depth": false
+      }
+    }
+  },
+  {
+    "dataset": "SampleToy",
+    "episode_id": "ep1",
+    "caption": [
+      {
+        "start_time": 0.0,
+        "description": "synthetic smoke sample episode 1"
+      }
+    ],
+    "views": {
+      "head": {
+        "video_path": "data/sample/videos/SampleToy_ep1_head.mp4",
+        "has_flow": false,
+        "has_depth": false
+      }
+    }
+  },
+  {
+    "dataset": "SampleToy",
+    "episode_id": "ep2",
+    "caption": [
+      {
+        "start_time": 0.0,
+        "description": "synthetic smoke sample episode 2"
+      }
+    ],
+    "views": {
+      "head": {
+        "video_path": "data/sample/videos/SampleToy_ep2_head.mp4",
+        "has_flow": false,
+        "has_depth": false
+      }
+    }
+  }
+]

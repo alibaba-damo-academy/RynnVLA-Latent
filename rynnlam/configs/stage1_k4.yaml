@@ -1,0 +1,87 @@
+# K-token ablation arm -- READ BEFORE RUNNING.
+# Unlike stage1.yaml this recipe omits k_token_bottleneck_dim, so it takes the default 0 =
+# full-width tokens: each of the K=4 k-tokens is feature_dim (embed_dim * 2 = 2048) wide, not
+# 64. The delivered latent is therefore 4*2048 + 64 + 32 = 8288 dims, NOT the 608-dim
+# `ktoken_zcam` protocol that stage1.yaml / stage2.yaml produce and that Stage-1 training
+# expects (latent_action_dim: 608) -- a corpus labeled from this checkpoint will be rejected by
+# the Stage-1 loader. For a K ablation at a comparable width, add `k_token_bottleneck_dim: 64`
+# (K=4 then gives 4*64 + 64 + 32 = 352 dims).
+#
+# Reference recipe, not a claim of optimal hyperparameters.
+# max_steps: optimizer updates (target_effective_batch > 0).
+# Loss warmups and save_interval_steps: per-rank batches.
+data:
+  depth_grad_threshold: 0.02
+  flow_max_radius: 20.0
+  max_frame_stride: 10
+  max_sample_stride: 15
+  max_scenes: 0
+  min_frame_stride: 5
+  safetensors_root: ./data/processed
+  target_hw:
+  - 238
+  - 322
+  manifest_path: ./data/processed
+device: auto
+logging:
+  eval_interval: 1
+  log_interval: 50
+  save_interval: 1
+  save_interval_steps: 2000
+  vis_interval: 100
+model:
+  adversarial_alpha: 2.0
+  adversarial_warmup_steps: 2000
+  cam_dec_hidden_dim: 256
+  camera_pose_latent_dim: 32
+  embed_dim: 1024
+  encoder_backbone: large
+  encoder_checkpoint_path: ./checkpoints/DA3-LARGE-1.1/model.safetensors
+  encoder_finetune_mode: freeze
+  use_k_token_recon: true
+  num_k_tokens: 4
+  k_token_source: features
+  recon_decoder_model_dim: 512
+  recon_decoder_num_heads: 16
+  recon_decoder_num_blocks: 4
+  flow_decoder_dec_blocks: 8
+  flow_decoder_model_dim: 512
+  flow_decoder_num_heads: 16
+  flow_mask_ratio: 0.5
+  latent_dim: 64
+  latent_encoder_model_dim: 512
+  latent_encoder_num_blocks: 6
+  latent_encoder_num_heads: 16
+  motion_hint_dim: 128
+  motion_hints_dropout: 0.8
+  patch_size: 14
+  warp_num_sample_points: 8
+  latent_encoder_type: selfattn
+  flow_decoder_version: v5
+resume: null
+training:
+  batch_size: 16
+  contrast_temperature: 0.2
+  # Per-dataset / per-role sampling multipliers are not part of the public recipe.
+  # Omitted here, they default to None and sampling falls back to the temperature
+  # rebalancing in WeightedMultiDatasetBatchSampler (see rynnlam/config.py).
+  exp_name: stage1_k4
+  flow_loss_beta: 0.05
+  flow_warmup_steps: 2000
+  gradient_accumulation_steps: 1
+  target_effective_batch: 1024
+  lambda_adversarial: 2.0
+  lambda_feat: 3.0
+  lambda_flow: 5.0
+  lambda_pose: 5.0
+  log_z_utilization: true
+  lr: 5e-5
+  lr_warmup_steps: 1000
+  max_steps: 36000
+  lambda_recon: 5.0
+  use_z_residual_loss: true
+  z_recon_warmup_steps: 800
+  num_epochs: 1
+  num_workers: 16
+  use_contrastive_feat_loss: true
+output_dir: ./runs

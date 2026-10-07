@@ -1,0 +1,3 @@
+[
+  {"data_type": "VLABenchDataset", "data_path": "data/vlabench", "task_category": "primitive", "video_backend": "pyav", "strict": true}
+]

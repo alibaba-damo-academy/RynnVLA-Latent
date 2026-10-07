@@ -1,0 +1,17 @@
+# sdist completeness: the installed packages are rynnvla/ and rynnlam/ (see pyproject),
+# but a source tarball should carry the whole runnable tree so "extract and run" matches a
+# git clone -- scripts/, configs/ and tests/ are not Python packages and would otherwise be
+# left out of the sdist. All documentation lives in README.md, which is included below.
+#
+# data/sample and data/sample_lam are the tiny synthetic corpora scripts/smoke.sh trains on;
+# they ship so the tarball runs offline too. data/smoke_tiny_model is generated, not shipped.
+include LICENSE NOTICE README.md pyproject.toml requirements.txt .gitignore
+graft configs
+graft scripts
+graft tests
+graft data/sample
+graft data/sample_lam
+
+prune **/__pycache__
+global-exclude *.py[cod]
+global-exclude *.local.json
