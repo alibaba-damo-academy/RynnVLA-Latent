@@ -37,6 +37,32 @@ DAMO Academy, Alibaba Group · Hong Kong Embodied AI Lab · CUHK · Hupan Lab
 
 ---
 
+## Model weights
+
+The trained checkpoints are published **separately from this code repository**, on both
+Hugging Face and ModelScope. This repository ships no weights (everything is loaded with
+`local_files_only=True`); download the artifact you need from the links below and point the
+training / export / eval commands at that local directory.
+
+| Artifact | What it is | Hugging Face | ModelScope |
+| --- | --- | --- | --- |
+| **RynnLAM** | self-supervised latent-action model (`ktoken_zcam`, 608-dim) — the auto-labeler that produces the Stage-1 latent corpus | [Alibaba-DAMO-Academy/RynnLAM](https://huggingface.co/Alibaba-DAMO-Academy/RynnLAM) | [DAMO_Academy/RynnLAM](https://modelscope.cn/models/DAMO_Academy/RynnLAM) |
+| **RynnVLA-Latent-2B** | Stage-1 latent-action pretrained VLA, 2B backbone (bfloat16, EMA @ step 236442) | [Alibaba-DAMO-Academy/RynnVLA-Latent-2B](https://huggingface.co/Alibaba-DAMO-Academy/RynnVLA-Latent-2B) | [DAMO_Academy/RynnVLA-Latent-2B](https://modelscope.cn/models/DAMO_Academy/RynnVLA-Latent-2B) |
+| **RynnVLA-Latent-4B** | Stage-1 latent-action pretrained VLA, 4B backbone (bfloat16, EMA @ step 236442) | [Alibaba-DAMO-Academy/RynnVLA-Latent-4B](https://huggingface.co/Alibaba-DAMO-Academy/RynnVLA-Latent-4B) | [DAMO_Academy/RynnVLA-Latent-4B](https://modelscope.cn/models/DAMO_Academy/RynnVLA-Latent-4B) |
+
+The 2B / 4B checkpoints are **Stage-1 latent-action pretraining** exports: they generate latent
+actions and serve as the initialization for Stage-2 embodiment alignment. They are *not*
+closed-loop control policies — do **not** point LIBERO / RoboTwin / VLABench evaluation at them
+directly; run Stage-2 post-training first (see
+[Inference and evaluation](#inference-and-evaluation)). RynnLAM is the motion checkpoint that
+*produces* the 608-dim latents Stage 1 consumes (see
+[Latent-action model (RynnLAM)](#latent-action-model-rynnlam)).
+
+Not yet published: the **RynnBrain-2B/4B VLM backbones** and the **DA3-Large encoder** required
+to *train* RynnLAM. Obtain those separately (see [Optional components](#optional-components)).
+
+---
+
 ## Abstract
 
 Vision-language-action (VLA) models are limited by the scarcity and fragmentation of
@@ -279,7 +305,8 @@ Do not freeze the vision backbone to present an incomplete test as full-model tr
     per-block `attn.q_norm` / `attn.k_norm`. A DA3 release built with QK-norm disabled
     (`qknorm_start: -1`) is missing those 65 tensors and the load fails.
   - a trained **RynnLAM motion checkpoint** is what *produces* the 608-dim latents Stage 1
-    consumes (via `rynnlam.inference.RynnLAMEncoder`).
+    consumes (via `rynnlam.inference.RynnLAMEncoder`). It is published on Hugging Face and
+    ModelScope — see [Model weights](#model-weights).
 - HDF5 RGB decoding uses h5py; RoVid-X tar decoding uses PyAV plus explicit tar/index roots.
 
 No private tracker, internal package mirror, CUTLASS submodule or DeepEP build is required for
@@ -1460,9 +1487,10 @@ Apache License 2.0 — see [LICENSE](LICENSE) and [NOTICE](NOTICE). Model weight
 are separate resources and are not granted by this source license. Obtaining a checkpoint does
 not grant permission to redistribute its training data or third-party weights.
 
-<!-- TODO(hf): once the RynnBrain-2B/4B backbones, the DA3-Large encoder and the RynnLAM motion
-     checkpoint are published on Hugging Face, add a "Model weights" section above with the hub
-     links and the exact revision each recipe was trained against, and replace the
-     "Not included in this distribution" list with per-artifact license notes. Until then every
-     weight is user-supplied and loaded with local_files_only=True, so no link here may imply a
-     download this repository performs. -->
+<!-- TODO(hf): RynnLAM and the Stage-1 RynnVLA-Latent-2B/4B checkpoints are now published — see
+     the "Model weights" section above. Still outstanding: once the RynnBrain-2B/4B VLM backbones
+     and the DA3-Large encoder are published, add their hub links to that section with the exact
+     revision each recipe was trained against, and replace the "Not included in this distribution"
+     list with per-artifact license notes. Everything published so far is a separate download
+     loaded with local_files_only=True, so no link here may imply a download this repository
+     performs. -->
