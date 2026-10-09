@@ -49,7 +49,7 @@ Two things are dataset-specific and must not be uniform across the five sources:
 The manifest is 281 MB of JSON (1.7 GB of Python objects, ~90 s to parse) which every rank
 would otherwise pay, so ``build_index`` flattens it into a numpy/blob ``.npz`` that loads in
 seconds; ``scripts/build_latent_pretrain_index.py`` writes it. A full-corpus manifest is
-gigabytes of JSON and ``json.load`` would need roughly six times that in RSS, so ``build_index``
+gigabytes of JSON, and parsing it costs roughly six times the text size in RSS, so ``build_index``
 streams its input and packs the string columns incrementally -- see ``manifest_io``.
 """
 import json
@@ -397,10 +397,10 @@ def build_index(
 
     ds_names: List[str] = []
     ds_id: Dict[str, int] = {}
-    # Columns are `array` buffers, not lists: a Python int costs ~28 bytes against the 2-8
-    # its C typecode reserves, so five numeric columns per episode dominate the index once
-    # the manifest is large. The typecodes are the C sizes the
-    # np.frombuffer calls below assume (b=1, h=2, i=4, q=8, f=4).
+    # Columns are `array` buffers, not lists: a Python int costs ~28 bytes against the 2-8 its
+    # C typecode reserves, so five numeric columns per episode dominate the index once the
+    # manifest is large. The typecodes are the C sizes the np.frombuffer calls below assume
+    # (b=1, h=2, i=4, q=8, f=4).
     ep_ds, ep_nlat, ep_fps = array("h"), array("i"), array("f")
     ep_stride, ep_pair_stride = array("h"), array("b")
     ep_start_frame = array("i")
@@ -427,14 +427,14 @@ def build_index(
         # trains on chunks 4x longer than intended and nothing reports it.
         pair_stride = max(1, int(views[0].get("pair_stride") or 1))
         stride = max(1, int(round(fps * latent_step_seconds / pair_stride)))
-        # Some corpora were labeled as consecutive windows of one long recording, so latent 0
-        # of such an episode is not source frame 0. The
-        # offset has to travel with the index or the decoded image is minutes away from the
-        # latents it is paired with -- and it has to travel PER VIEW, because each view was
-        # concatenated into a different file at a different offset (in Droid and BEHAVIOR-1K
-        # most manifest records have views whose start_frame disagrees). The
-        # per-view value is written into view_start_frame in the loop below; this scalar is
-        # views[0]'s offset, retained for callers that expect a per-episode scalar offset.
+        # Some corpora were labeled as consecutive windows of one long recording, so latent 0 of
+        # such an episode is not source frame 0. The offset has to travel with the index or the
+        # decoded image is minutes away from the latents it is paired with -- and it has to
+        # travel PER VIEW, because each view was concatenated into a different file at a
+        # different offset (in Droid and BEHAVIOR-1K most manifest records have views whose
+        # start_frame disagrees). The per-view value is written into view_start_frame in the
+        # loop below; this scalar is views[0]'s offset, retained for callers that expect a
+        # per-episode scalar offset.
         start_frame = max(0, int(views[0].get("start_frame") or 0))
         nlat = min(int(v["num_latents"]) for v in views)
         if nlat < (latent_chunk - 1) * stride + 1:
@@ -722,8 +722,8 @@ class LatentPretrainDataset(BaseVLADataset):
         # Largest remainder rather than per-element rounding: round() does not conserve the
         # total (up to +/- n/2 across n sources), and len(dataset) feeds max_steps at submit
         # time, which sits in RESUME_CRITICAL_FIELDS -- so an outer off-by-one here silently
-        # voids every existing checkpoint of the arm, exactly as the inner one at line ~730
-        # already guards against.
+        # voids every existing checkpoint of the arm, exactly as an inner one would in the
+        # per-episode allocation below.
         exact = np.array([float(weights[name]) / wsum * total for name in self._ds_names])
         targets = _largest_remainder(exact, total)
         # max(1, ...) is carried over unchanged from the dataset-major layout: a zero weight

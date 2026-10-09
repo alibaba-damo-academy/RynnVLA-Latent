@@ -114,12 +114,12 @@ def label_video(encoder, video, protocol, *, view, batch_size):
 def write_npz(destination, latent, pairs, meta):
     """np.savez seeks on write, which FUSE mounts reject; build in memory then write bytes.
 
-    The bytes land in a ``.partial`` sibling and are published with ``os.replace``, so an
-    interrupted or partially-flushed write can never leave a truncated file at the final
-    path. That matters because the skip check below trusts existence: a half-written
-    ``latent.npz`` would otherwise be treated as complete by every later run and never
-    repaired. Not imported from ``stream_extract_tar.atomic_write`` because that module
-    pulls in cv2 and torch at import time, which the labeler does not otherwise need.
+    The bytes land in a ``.partial`` sibling and are published with ``os.replace``, so this
+    writer can never leave a half-written file at the final path -- not for its own skip check
+    on a rerun, and not for a ``rebuild_latent_manifest`` sweep running while labeling is still
+    in progress. ``npz_is_complete`` is the second layer, covering files truncated by something
+    other than this function. Not imported from ``stream_extract_tar.atomic_write`` because that
+    module pulls in cv2 and torch at import time, which the labeler does not otherwise need.
     """
     destination.parent.mkdir(parents=True, exist_ok=True)
     buffer = io.BytesIO()
@@ -139,18 +139,16 @@ def npz_is_complete(path):
     Constructing a ``ZipFile`` reads only the End-Of-Central-Directory record at the tail, so
     this costs one small read rather than the whole payload -- the same reason
     ``rebuild_latent_manifest.read_npz_meta`` reads a tail window. A truncated file raises
-    ``BadZipFile``, which subclasses ``Exception`` directly and is therefore caught by
-    neither ``OSError`` nor ``ValueError``; naming it explicitly is the whole point.
+    ``BadZipFile``, which subclasses ``Exception`` directly and is therefore caught by neither
+    ``OSError`` nor ``ValueError``; naming it explicitly is the whole point.
 
-    The member is ``latent_action.npy``: ``np.savez`` appends ``.npy`` to every key, so
-    testing for the bare array name would report every healthy file as corrupt and relabel
-    the entire corpus on each run. The bare form is accepted too, in case a writer ever
-    passes an explicit filename.
+    The member is ``latent_action.npy``, not ``latent_action``: ``np.savez`` appends ``.npy`` to
+    every key, so testing for the bare array name would report every healthy file as corrupt and
+    relabel the whole corpus on each run.
     """
     try:
         with zipfile.ZipFile(path) as archive:
-            names = set(archive.namelist())
-        return bool(names & {"latent_action.npy", "latent_action"})
+            return "latent_action.npy" in archive.namelist()
     except (OSError, ValueError, zipfile.BadZipFile):
         return False
 
