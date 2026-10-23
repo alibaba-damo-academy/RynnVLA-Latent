@@ -1,22 +1,3 @@
----
-license: apache-2.0
-library_name: rynnvla
-pipeline_tag: robotics
-language:
-  - en
-tags:
-  - vision-language-action
-  - vla
-  - latent-action
-  - latent-action-model
-  - robot-manipulation
-  - flow-matching
-  - mixture-of-transformers
-  - embodied-ai
-  - pytorch
-  - deepspeed
----
-
 <div align="center">
 
 ## RynnVLA-Latent: Scaling Robotic Manipulation Foundation Models with 3D-Grounded Latent Actions
@@ -185,4 +166,21 @@ Closed-loop mechanics, offline replay, and the RoboTwin / VLABench adapters are 
 
 Apache License 2.0 — see [LICENSE](LICENSE) and [NOTICE](NOTICE). This project uses Qwen3-VL model and processor interfaces from Hugging Face Transformers; the RynnLAM backbone is DA3/DINOv2-derived and the action expert implements conditional normalization, two-stream action attention and optional auxiliary heads — the full third-party attribution list is in [NOTICE](NOTICE).
 
-Model weights and datasets are separate resources and are not granted by this source license. Not included in this distribution: RynnBrain pretrained weights, the DA3-Large encoder weights, offline RynnLAM latent files, LIBERO datasets and simulator assets, the RoboTwin HDF5 corpus and simulator, and the VLABench simulator tree. Obtain each separately and follow its own license and usage conditions.
+---
+license: apache-2.0
+library_name: rynnvla
+pipeline_tag: robotics
+language:
+  - en
+tags:
+  - vision-language-action
+  - vla
+  - latent-action
+  - latent-action-model
+  - robot-manipulation
+  - flow-matching
+  - mixture-of-transformers
+  - embodied-ai
+  - pytorch
+  - deepspeed
+---Model weights and datasets are separate resources and are not granted by this source license. Not included in this distribution: RynnBrain pretrained weights, the DA3-Large encoder weights, offline RynnLAM latent files, LIBERO datasets and simulator assets, the RoboTwin HDF5 corpus and simulator, and the VLABench simulator tree. Obtain each separately and follow its own license and usage conditions.
