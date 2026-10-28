@@ -8,7 +8,7 @@
   💫 <a href="https://alibaba-damo-academy.github.io/RynnVLA-Latent.github.io"><b>Project Page</b></a> &nbsp;&nbsp;|&nbsp;&nbsp;
   🤗 <a href="https://huggingface.co/Alibaba-DAMO-Academy/RynnVLA-Latent"><b>Hugging Face</b></a> &nbsp;&nbsp;|&nbsp;&nbsp;
   🤖 <a href="https://www.modelscope.cn/models/DAMO_Academy/RynnVLA-Latent"><b>ModelScope</b></a> &nbsp;&nbsp;|&nbsp;&nbsp;
-  📄 <a href=""><b>arXiv</b></a>
+  📄 <a href="https://arxiv.org/abs/2610.34356"><b>arXiv</b></a>
 </p>
 
 ---
@@ -161,6 +161,20 @@ python -m rynnvla.api.eval_libero \
 - **RoboTwin and VLABench are supported on the policy side only** — neither simulator, runner nor corpus is redistributed, so no command here produces their numbers on its own.
 
 Closed-loop mechanics, offline replay, and the RoboTwin / VLABench adapters are detailed in [`docs/ADVANCED_TRAINING.md`](docs/ADVANCED_TRAINING.md).
+
+## 📑 Citation
+
+If you find this project useful, please cite:
+
+```bibtex
+@article{rynnvlalatent,
+  title  = {RynnVLA-Latent: Scaling Robotic Manipulation Foundation Models with 3D-Grounded Latent Actions},
+  author = {Haoyu Zhao and Xingyue Zhao and Zhian Su and Bohan Hou and Yinzhou Tang and Fengyi Wang and Kehan Li and Yuming Jiang and Siteng Huang and Xin Li and Zhenyu Zeng and Mingxiu Chen and Deli Zhao and Zhongyu Li},
+  journal= {arXiv preprint arXiv:2610.34356},
+  year   = {2026},
+}
+```
+
 
 ## ⚖️ License & Attribution
 
